@@ -7,33 +7,12 @@ import { fetch } from 'expo/fetch';
 
 import * as Location from 'expo-location';
 import { useEffect, useState } from 'react';
-
-type Address = {
-  place_id: number;
-  osm_type: string;
-  osm_id: number;
-  type: string;
-  name: string;
-  addressType: string;
-};
-
-type Details = {
-  place_id: number;
-  osm_type: string;
-  osm_id: number;
-  category: string;
-  type: string;
-  localname: any;
-  extratags: ExtraTags;
-}
-
-type ExtraTags = {
-  maxspeed: string;
-}
+import Address from '@/types/address';
+import Details from '@/types/details';
+import coordinatesAlmostEqual from '@/gis/coordinatesAlmostEqual';
 
 export default function HomeScreen() {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [speed, setSpeed] = useState<number | null>(0);
   const [address, setAddress] = useState<Address | null>(null);
   const [details, setDetails] = useState<Details | null>(null);
@@ -46,7 +25,7 @@ export default function HomeScreen() {
   const addItem = (item: string) => {
     setItems(prevItems => {
       const newItems = [...prevItems, item];
-      if (newItems.length > 10) {
+      if (newItems.length > 25) {
         newItems.shift();
       }
       return newItems;
@@ -58,7 +37,6 @@ export default function HomeScreen() {
     if (timerRunning) {
       timer = setInterval(() => {
         console.log('Timer running: ' + timeLeft);
-        setErrorMsg('Timer running: ' + timeLeft);
         addItem('Timer running: ' + timeLeft);
         setTimeLeft(prevTime => prevTime - 1);
       }, 1000);
@@ -74,7 +52,6 @@ export default function HomeScreen() {
     [timerRunning, timeLeft]);
   const startTimer = () => {
     console.log('Start timer');
-    setErrorMsg('Start timer');
     addItem('Start timer');
     setTimeLeft(150); // Reset to 2.5 minutes 
     setTimerRunning(true);
@@ -82,7 +59,6 @@ export default function HomeScreen() {
 
   const stopTimer = () => {
     console.log('Stop timer');
-    setErrorMsg('Stop timer');
     addItem('Stop timer');
     setTimerRunning(false);
   };
@@ -91,25 +67,33 @@ export default function HomeScreen() {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        setErrorMsg('Permission to access location was denied');
         addItem('Permission to access location was denied');
         return;
       }
       Location.watchPositionAsync({ accuracy: Location.Accuracy.High, timeInterval: 1000, distanceInterval: 1, }, async (loc) => {
-        console.log('Location');
-        setErrorMsg('Location');
-        addItem('Location');
+        console.log('Location ', location?.coords);
+        console.log('Location ', loc.coords);
+        if (loc === undefined || loc.coords === undefined || loc.coords.longitude === undefined || loc.coords.latitude === undefined) {
+          console.log('Location undefined');
+          addItem('Location undefined');
+          return;
+        }
+        addItem('Location ' + loc?.coords?.latitude + ' ' + loc?.coords?.longitude);
         if (timerRunning) {
           console.log('Timer running');
           addItem('Timer running');
-          setErrorMsg('Timer running: ' + timeLeft);
           return;
         }
 
         if (location?.coords.longitude == loc.coords.longitude && location?.coords.latitude == loc.coords.latitude) {
           console.log('No change in location');
-          setErrorMsg('No change in location');
           addItem('No change in location');
+          return;
+        }
+
+        if (coordinatesAlmostEqual(location, loc)) {
+          console.log('No change in coordinates');
+          addItem('No change in coordinates');
           return;
         }
 
@@ -117,10 +101,10 @@ export default function HomeScreen() {
         if (loc.coords.speed) {
           setSpeed(loc.coords.speed * 3.6); // Convert m/s to km/h 
         }
-        console.log(location?.coords.longitude.toFixed(9), location?.coords.latitude.toFixed(9));
-        addItem(location?.coords.longitude.toFixed(9) + ' ' + location?.coords.latitude.toFixed(9));
-        console.log(speed?.toFixed(2));
-        addItem(speed?.toFixed(2) + ' km/h');
+        console.log('lon lat ', location?.coords.longitude.toFixed(9), location?.coords.latitude.toFixed(9));
+        addItem('lon lat ' + location?.coords.longitude.toFixed(9) + ' ' + location?.coords.latitude.toFixed(9));
+        console.log('speed ', speed?.toFixed(2));
+        addItem('speed ' + speed?.toFixed(2) + ' km/h');
 
         // Tests only
         // https://nominatim.openstreetmap.org/reverse.php?lat=49.881243&lon=19.4889423&format=json&zoom=17
@@ -131,6 +115,7 @@ export default function HomeScreen() {
           // Address
           const addressPath = `https://nominatim.openstreetmap.org/reverse.php?lat=${loc?.coords.latitude}&lon=${loc?.coords.longitude}&format=json&zoom=17`;
           console.log(addressPath);
+          addItem(addressPath);
 
           const addressResponse = await fetch(addressPath,
             {
@@ -139,6 +124,7 @@ export default function HomeScreen() {
             }
           );
           console.log(addressResponse.status);
+          addItem(String(addressResponse.status));
 
           if (addressResponse.status != 200) {
             stopTimer();
@@ -150,21 +136,22 @@ export default function HomeScreen() {
 
           if (addressData.osm_id == address?.osm_id) {
             console.log('No change in address');
-            setErrorMsg('No change in address');
             addItem('No change in address');
             return;
           }
 
           setAddress(addressData);
-          console.log(address?.osm_id);
-          console.log(address?.name);
-          console.log(address?.osm_type);
-          console.log(address?.type);
+          console.log('o ', address?.osm_id);
+          console.log('n ', address?.name);
+          console.log('o ', address?.osm_type);
+          console.log('t ', address?.type);
 
           // Details
           // 207877134
           const id = addressData.osm_id;
           const detailsPath = `https://nominatim.openstreetmap.org/details.php?osmtype=W&osmid=${id}&addressdetails=0&hierarchy=0&group_hierarchy=1&format=json`;
+          console.log(detailsPath);
+          addItem(detailsPath);
           const detailsResponse = await fetch(detailsPath,
             {
               method: 'GET',
@@ -173,16 +160,17 @@ export default function HomeScreen() {
           );
 
           console.log(detailsResponse.status);
+          addItem(String(detailsResponse.status));
           const detailsData = await detailsResponse.json();
-          console.log(JSON.stringify(detailsData));
+          console.log('d ', JSON.stringify(detailsData));
           setDetails(details);
-          console.log(details?.place_id);
-          console.log(details?.osm_id);
-          console.log(details?.localname);
-          console.log(JSON.stringify(details?.extratags));
+          console.log('p ', details?.place_id);
+          console.log('o ', details?.osm_id);
+          console.log('l ', details?.localname);
+          console.log('e ', JSON.stringify(details?.extratags));
+          addItem(details?.localname + ' ' + JSON.stringify(details?.extratags));
         } catch (error) {
           console.error(error);
-          setErrorMsg(String(error));
           addItem(String(error));
         }
       });
@@ -204,7 +192,6 @@ export default function HomeScreen() {
         <ThemedText>{location?.coords.longitude.toFixed(9)} {location?.coords.latitude.toFixed(9)}</ThemedText>
         <ThemedText>{address?.name} {address?.osm_type} {address?.type}</ThemedText>
         <ThemedText>{details?.localname} {JSON.stringify(details?.extratags)}</ThemedText>
-        <ThemedText>{errorMsg}</ThemedText>
         {items.map((item, index) => (<ThemedText key={index}>{item}</ThemedText>))}
       </ThemedView>
     </ParallaxScrollView>
@@ -229,3 +216,5 @@ const styles = StyleSheet.create({
     position: 'absolute',
   },
 });
+
+
