@@ -11,40 +11,54 @@ import Address from '@/types/address';
 import Details from '@/types/details';
 import coordinatesAlmostEqual from '@/gis/coordinatesAlmostEqual';
 
+const timeToWait = 300; // 5 minutes in seconds
+
 export default function HomeScreen() {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
-  const [speed, setSpeed] = useState<number | null>(0);
+  const [speed, setSpeed] = useState<string | null>(null);
   const [address, setAddress] = useState<Address | null>(null);
   const [details, setDetails] = useState<Details | null>(null);
 
-  const [timeLeft, setTimeLeft] = useState(150); // 2.5 minutes in seconds 
+  const [timeLeft, setTimeLeft] = useState(timeToWait);
   const [timerRunning, setTimerRunning] = useState(false);
 
-  const [items, setItems] = useState<String[]>([]);
+  const [logs, setLogs] = useState<String[]>([]);
+  const [ways, setWays] = useState<Address[]>([]);
 
-  const addItem = (item: string) => {
-    setItems(prevItems => {
-      const newItems = [...prevItems, item];
-      if (newItems.length > 25) {
-        newItems.shift();
+  const addLog = (log: string) => {
+    setLogs(prevLogs => {
+      const newLogs = [...prevLogs, log];
+      if (newLogs.length > 25) {
+        newLogs.shift();
       }
-      return newItems;
+      return newLogs;
     });
   };
+
+  const addWay = (way: Address) => {
+    setWays(prevWays => {
+      const newWays = [...prevWays, way];
+      if (newWays.length > 25) {
+        newWays.shift();
+      }
+      return newWays;
+    });
+  };
+
 
   useEffect(() => {
     let timer: string | number | NodeJS.Timeout | undefined;
     if (timerRunning) {
       timer = setInterval(() => {
         console.log('Timer running: ' + timeLeft);
-        addItem('Timer running: ' + timeLeft);
+        addLog('Timer running: ' + timeLeft);
         setTimeLeft(prevTime => prevTime - 1);
       }, 1000);
     }
     if (timeLeft === 0) {
       clearInterval(timer);
       console.log('Timer expired');
-      addItem('Timer expired');
+      addLog('Timer expired');
       setTimerRunning(false);
     }
     return () => clearInterval(timer);
@@ -52,14 +66,14 @@ export default function HomeScreen() {
     [timerRunning, timeLeft]);
   const startTimer = () => {
     console.log('Start timer');
-    addItem('Start timer');
-    setTimeLeft(150); // Reset to 2.5 minutes 
+    addLog('Start timer');
+    setTimeLeft(timeToWait);
     setTimerRunning(true);
   };
 
   const stopTimer = () => {
     console.log('Stop timer');
-    addItem('Stop timer');
+    addLog('Stop timer');
     setTimerRunning(false);
   };
 
@@ -67,50 +81,49 @@ export default function HomeScreen() {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        addItem('Permission to access location was denied');
+        addLog('Permission to access location was denied');
         return;
       }
-      Location.watchPositionAsync({ accuracy: Location.Accuracy.High, timeInterval: 1000, distanceInterval: 1, }, async (loc) => {
-        console.log('Location ', location?.coords);
-        console.log('Location ', loc.coords);
+      Location.watchPositionAsync({ accuracy: Location.Accuracy.High, timeInterval: 15 * 1000, distanceInterval: 5, }, async (loc) => {
+        console.log('Location ', location?.coords.longitude, location?.coords.latitude);
         if (loc === undefined || loc.coords === undefined || loc.coords.longitude === undefined || loc.coords.latitude === undefined) {
           console.log('Location undefined');
-          addItem('Location undefined');
+          addLog('Location undefined');
           return;
         }
-        addItem('Location ' + loc?.coords?.latitude + ' ' + loc?.coords?.longitude);
+        addLog('Location ' + loc?.coords?.longitude + ' ' + loc?.coords?.latitude);
         if (timerRunning) {
           console.log('Timer running');
-          addItem('Timer running');
+          addLog('Timer running');
           return;
         }
 
         if (location?.coords.longitude == loc.coords.longitude && location?.coords.latitude == loc.coords.latitude) {
           console.log('No change in location');
-          addItem('No change in location');
+          addLog('No change in location');
           return;
         }
 
         if (coordinatesAlmostEqual(location, loc)) {
           console.log('No change in coordinates');
-          addItem('No change in coordinates');
+          addLog('No change in coordinates');
           return;
         }
 
         setLocation(loc);
         if (loc.coords.speed) {
-          setSpeed(loc.coords.speed * 3.6); // Convert m/s to km/h 
+          setSpeed(loc.coords.speed.toFixed(2)); // * 3.6); // Convert m/s to km/h 
         }
-        console.log('lon lat ', location?.coords.longitude.toFixed(9), location?.coords.latitude.toFixed(9));
-        addItem('lon lat ' + location?.coords.longitude.toFixed(9) + ' ' + location?.coords.latitude.toFixed(9));
-        console.log('speed ', speed?.toFixed(2));
-        addItem('speed ' + speed?.toFixed(2) + ' km/h');
+        console.log('lon lat ', loc?.coords.longitude.toFixed(9), loc?.coords.latitude.toFixed(9));
+        addLog('lon lat ' + loc?.coords.longitude.toFixed(9) + ' ' + loc?.coords.latitude.toFixed(9));
+        console.log('speed ', loc?.coords.speed?.toFixed(2));
+        addLog('speed ' + loc?.coords.speed + ' km/h');
 
         try {
           // Address
           const addressPath = `https://nominatim.openstreetmap.org/reverse.php?lat=${loc?.coords.latitude}&lon=${loc?.coords.longitude}&format=json&zoom=17`;
-          console.log(addressPath);
-          addItem(addressPath);
+          console.log(addressPath.substring(0, 42));
+          addLog(addressPath.substring(0, 42));
 
           const addressResponse = await fetch(addressPath,
             {
@@ -119,7 +132,7 @@ export default function HomeScreen() {
             }
           );
           console.log(addressResponse.status);
-          addItem('s ' + String(addressResponse.status));
+          addLog('s ' + String(addressResponse.status));
 
           if (addressResponse.status != 200) {
             stopTimer();
@@ -131,23 +144,38 @@ export default function HomeScreen() {
 
           if (addressData.osm_id == address?.osm_id) {
             console.log('No change in address');
-            addItem('No change in address');
+            addLog('No change in address');
             return;
           }
 
           setAddress(addressData);
           console.log('o ', address?.osm_id);
           console.log('n ', address?.name);
-          addItem('a ' + addressData.name + ' ' + addressData.osm_type + ' ' + addressData.type);
+          addLog('a ' + addressData.name + ' ' + addressData.osm_type + ' ' + addressData.type);
           console.log('o ', address?.osm_type);
           console.log('t ', address?.type);
+
+          // Simply cache
+          const foundWay = ways.find(way => way.osm_id === addressData.osm_id);
+          console.log('Found way ', foundWay?.osm_id);
+          addLog('Found way ' + foundWay?.osm_id);
+          if (foundWay) {
+            console.log('Way already found');
+            addLog('Way already found');
+            setAddress(foundWay);
+            return;
+          }
+
+          addWay(addressData);
 
           // Details
           // 207877134
           const id = addressData.osm_id;
+          addLog('id ' + id);
+          console.log('id ', id);
           const detailsPath = `https://nominatim.openstreetmap.org/details.php?osmtype=W&osmid=${id}&addressdetails=0&hierarchy=0&group_hierarchy=1&format=json`;
-          console.log(detailsPath);
-          addItem(detailsPath);
+          console.log(detailsPath.substring(0, 42));
+          addLog(detailsPath.substring(0, 42));
           const detailsResponse = await fetch(detailsPath,
             {
               method: 'GET',
@@ -156,7 +184,7 @@ export default function HomeScreen() {
           );
 
           console.log(detailsResponse.status);
-          addItem('s ' + String(detailsResponse.status));
+          addLog('s ' + String(detailsResponse.status));
           const detailsData = await detailsResponse.json();
           console.log('d ', JSON.stringify(detailsData));
           setDetails(details);
@@ -164,10 +192,10 @@ export default function HomeScreen() {
           console.log('o ', details?.osm_id);
           console.log('l ', details?.localname);
           console.log('e ', JSON.stringify(details?.extratags));
-          addItem('d ' + details?.localname + ' ' + JSON.stringify(details?.extratags));
+          addLog('d ' + details?.localname + ' ' + JSON.stringify(details?.extratags));
         } catch (error) {
           console.error(error);
-          addItem(String(error));
+          addLog(String(error));
         }
       });
     }
@@ -184,11 +212,11 @@ export default function HomeScreen() {
         />
       }>
       <ThemedView>
-        <ThemedText>{speed?.toFixed(2)}</ThemedText>
+        <ThemedText>{speed} km/h</ThemedText>
         <ThemedText>{location?.coords.longitude.toFixed(9)} {location?.coords.latitude.toFixed(9)}</ThemedText>
-        <ThemedText>{address?.name} {address?.osm_type} {address?.type}</ThemedText>
+        <ThemedText>{address?.name} {address?.osm_type} {address?.type} {address?.osm_id}</ThemedText>
         <ThemedText>{details?.localname} {JSON.stringify(details?.extratags)}</ThemedText>
-        {items.map((item, index) => (<ThemedText key={index}>{item}</ThemedText>))}
+        {logs.map((item, index) => (<ThemedText key={index}>{item}</ThemedText>))}
       </ThemedView>
     </ParallaxScrollView>
   );
