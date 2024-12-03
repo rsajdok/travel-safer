@@ -117,7 +117,7 @@ export default function HomeScreen() {
         console.log('lon lat ', loc?.coords.longitude.toFixed(9), loc?.coords.latitude.toFixed(9));
         addLog('lon lat ' + loc?.coords.longitude.toFixed(9) + ' ' + loc?.coords.latitude.toFixed(9));
         console.log('speed ', loc?.coords.speed?.toFixed(2));
-        addLog('speed ' + loc?.coords.speed + ' km/h');
+        addLog('speed ' + loc?.coords.speed?.toFixed(2) + ' km/h');
 
         try {
           // Address
@@ -148,7 +148,6 @@ export default function HomeScreen() {
             return;
           }
 
-          setAddress(addressData);
           console.log('o ', address?.osm_id);
           console.log('n ', address?.name);
           addLog('a ' + addressData.name + ' ' + addressData.osm_type + ' ' + addressData.type);
@@ -157,14 +156,14 @@ export default function HomeScreen() {
 
           // Simply cache
           const foundWay = ways.find(way => way.osm_id === addressData.osm_id);
-          console.log('Found way ', foundWay?.osm_id);
-          addLog('Found way ' + foundWay?.osm_id);
           if (foundWay) {
             console.log('Way already found');
             addLog('Way already found');
             setAddress(foundWay);
             return;
           }
+
+          setAddress(addressData);
 
           addWay(addressData);
 
