@@ -39,6 +39,38 @@ export default function HomeScreen() {
   const [address, setAddress] = useState<Address | null>(null);
   const [details, setDetails] = useState<Details | null>(null);
 
+  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds 
+  const [timerRunning, setTimerRunning] = useState(false);
+
+  useEffect(() => {
+    let timer: string | number | NodeJS.Timeout | undefined;
+    if (timerRunning) {
+      timer = setInterval(() => {
+        console.log('Timer running: ' + timeLeft);
+        setErrorMsg('Timer running: ' + timeLeft);
+        setTimeLeft(prevTime => prevTime - 1);
+      }, 1000);
+    }
+    if (timeLeft === 0) {
+      clearInterval(timer);
+      setTimerRunning(false);
+    }
+    return () => clearInterval(timer);
+  },
+    [timerRunning, timeLeft]);
+  const startTimer = () => {
+    console.log('Start timer');
+    setErrorMsg('Start timer');
+    setTimeLeft(300); // Reset to 5 minutes 
+    setTimerRunning(true);
+  };
+
+  const stopTimer = () => {
+    console.log('Stop timer');
+    setErrorMsg('Stop timer');
+    setTimerRunning(false);
+  };
+
   useEffect(() => {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
@@ -49,6 +81,7 @@ export default function HomeScreen() {
       Location.watchPositionAsync({ accuracy: Location.Accuracy.High, timeInterval: 1000, distanceInterval: 1, }, async (loc) => {
         if (location?.coords.longitude == loc.coords.longitude && location?.coords.latitude == loc.coords.latitude) {
           console.log('No change in location');
+          setErrorMsg('No change in location');
           return;
         }
 
@@ -58,6 +91,12 @@ export default function HomeScreen() {
         }
         console.log(location?.coords.longitude.toFixed(9), location?.coords.latitude.toFixed(9));
         console.log(speed?.toFixed(2));
+
+        if (timerRunning) {
+          console.log('Timer running');
+          setErrorMsg('Timer running: ' + timeLeft);
+          return;
+        }
 
         // Tests only
         // https://nominatim.openstreetmap.org/reverse.php?lat=49.881243&lon=19.4889423&format=json&zoom=17
@@ -77,10 +116,16 @@ export default function HomeScreen() {
           );
           console.log(addressResponse.status);
 
+          if (addressResponse.status != 200) {
+            startTimer();
+            return;
+          }
+
           const addressData = await addressResponse.json();
 
           if (addressData.osm_id == address?.osm_id) {
             console.log('No change in address');
+            setErrorMsg('No change in address');
             return;
           }
 
@@ -103,13 +148,13 @@ export default function HomeScreen() {
           );
 
           console.log(detailsResponse.status);
-          const details = await detailsResponse.json();
-          console.log(JSON.stringify(details));
+          const detailsData = await detailsResponse.json();
+          console.log(JSON.stringify(detailsData));
           setDetails(details);
-          console.log(details.place_id);
-          console.log(details.osm_id);
-          console.log(details.localname);
-          console.log(JSON.stringify(details.extratags));
+          console.log(details?.place_id);
+          console.log(details?.osm_id);
+          console.log(details?.localname);
+          console.log(JSON.stringify(details?.extratags));
         } catch (error) {
           console.error(error);
           setErrorMsg(String(error));
