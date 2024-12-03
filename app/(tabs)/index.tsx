@@ -31,7 +31,6 @@ type ExtraTags = {
   maxspeed: string;
 }
 
-
 export default function HomeScreen() {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -42,18 +41,32 @@ export default function HomeScreen() {
   const [timeLeft, setTimeLeft] = useState(150); // 2.5 minutes in seconds 
   const [timerRunning, setTimerRunning] = useState(false);
 
+  const [items, setItems] = useState<String[]>([]);
+
+  const addItem = (item: string) => {
+    setItems(prevItems => {
+      const newItems = [...prevItems, item];
+      if (newItems.length > 10) {
+        newItems.shift();
+      }
+      return newItems;
+    });
+  };
+
   useEffect(() => {
     let timer: string | number | NodeJS.Timeout | undefined;
     if (timerRunning) {
       timer = setInterval(() => {
         console.log('Timer running: ' + timeLeft);
         setErrorMsg('Timer running: ' + timeLeft);
+        addItem('Timer running: ' + timeLeft);
         setTimeLeft(prevTime => prevTime - 1);
       }, 1000);
     }
     if (timeLeft === 0) {
       clearInterval(timer);
       console.log('Timer expired');
+      addItem('Timer expired');
       setTimerRunning(false);
     }
     return () => clearInterval(timer);
@@ -62,6 +75,7 @@ export default function HomeScreen() {
   const startTimer = () => {
     console.log('Start timer');
     setErrorMsg('Start timer');
+    addItem('Start timer');
     setTimeLeft(150); // Reset to 2.5 minutes 
     setTimerRunning(true);
   };
@@ -69,6 +83,7 @@ export default function HomeScreen() {
   const stopTimer = () => {
     console.log('Stop timer');
     setErrorMsg('Stop timer');
+    addItem('Stop timer');
     setTimerRunning(false);
   };
 
@@ -77,13 +92,16 @@ export default function HomeScreen() {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         setErrorMsg('Permission to access location was denied');
+        addItem('Permission to access location was denied');
         return;
       }
       Location.watchPositionAsync({ accuracy: Location.Accuracy.High, timeInterval: 1000, distanceInterval: 1, }, async (loc) => {
         console.log('Location');
         setErrorMsg('Location');
+        addItem('Location');
         if (timerRunning) {
           console.log('Timer running');
+          addItem('Timer running');
           setErrorMsg('Timer running: ' + timeLeft);
           return;
         }
@@ -91,6 +109,7 @@ export default function HomeScreen() {
         if (location?.coords.longitude == loc.coords.longitude && location?.coords.latitude == loc.coords.latitude) {
           console.log('No change in location');
           setErrorMsg('No change in location');
+          addItem('No change in location');
           return;
         }
 
@@ -99,7 +118,9 @@ export default function HomeScreen() {
           setSpeed(loc.coords.speed * 3.6); // Convert m/s to km/h 
         }
         console.log(location?.coords.longitude.toFixed(9), location?.coords.latitude.toFixed(9));
+        addItem(location?.coords.longitude.toFixed(9) + ' ' + location?.coords.latitude.toFixed(9));
         console.log(speed?.toFixed(2));
+        addItem(speed?.toFixed(2) + ' km/h');
 
         // Tests only
         // https://nominatim.openstreetmap.org/reverse.php?lat=49.881243&lon=19.4889423&format=json&zoom=17
@@ -130,6 +151,7 @@ export default function HomeScreen() {
           if (addressData.osm_id == address?.osm_id) {
             console.log('No change in address');
             setErrorMsg('No change in address');
+            addItem('No change in address');
             return;
           }
 
@@ -138,7 +160,6 @@ export default function HomeScreen() {
           console.log(address?.name);
           console.log(address?.osm_type);
           console.log(address?.type);
-
 
           // Details
           // 207877134
@@ -162,6 +183,7 @@ export default function HomeScreen() {
         } catch (error) {
           console.error(error);
           setErrorMsg(String(error));
+          addItem(String(error));
         }
       });
     }
@@ -183,6 +205,7 @@ export default function HomeScreen() {
         <ThemedText>{address?.name} {address?.osm_type} {address?.type}</ThemedText>
         <ThemedText>{details?.localname} {JSON.stringify(details?.extratags)}</ThemedText>
         <ThemedText>{errorMsg}</ThemedText>
+        {items.map((item, index) => (<ThemedText key={index}>{item}</ThemedText>))}
       </ThemedView>
     </ParallaxScrollView>
   );
