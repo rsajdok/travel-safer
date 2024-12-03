@@ -169,7 +169,7 @@ export default function HomeScreen() {
 
           // Details
           // 207877134
-          const id = addressData.osm_id;
+          const id = 699567195; //  addressData.osm_id;
           addLog('id ' + id);
           console.log('id ', id);
           const detailsPath = `https://nominatim.openstreetmap.org/details.php?osmtype=W&osmid=${id}&addressdetails=0&hierarchy=0&group_hierarchy=1&format=json`;
@@ -186,12 +186,12 @@ export default function HomeScreen() {
           addLog('s ' + String(detailsResponse.status));
           const detailsData = await detailsResponse.json();
           console.log('d ', JSON.stringify(detailsData));
-          setDetails(details);
-          console.log('p ', details?.place_id);
-          console.log('o ', details?.osm_id);
-          console.log('l ', details?.localname);
-          console.log('e ', JSON.stringify(details?.extratags));
-          addLog('d ' + details?.localname + ' ' + JSON.stringify(details?.extratags));
+          setDetails(detailsData);
+          console.log('p ', detailsData?.place_id);
+          console.log('o ', detailsData?.osm_id);
+          console.log('l ', detailsData?.localname);
+          console.log('e ', JSON.stringify(detailsData?.extratags));
+          addLog('d ' + detailsData?.localname + ' ' + JSON.stringify(detailsData?.extratags));
         } catch (error) {
           console.error(error);
           addLog(String(error));
@@ -214,7 +214,7 @@ export default function HomeScreen() {
         <ThemedText>{speed} km/h</ThemedText>
         <ThemedText>{location?.coords.longitude.toFixed(9)} {location?.coords.latitude.toFixed(9)}</ThemedText>
         <ThemedText>{address?.name} {address?.osm_type} {address?.type} {address?.osm_id}</ThemedText>
-        <ThemedText>{details?.localname} {JSON.stringify(details?.extratags)}</ThemedText>
+        <ThemedText>{details?.localname} {JSON.stringify(details?.extratags.maxspeed)}</ThemedText>
         {logs.map((item, index) => (<ThemedText key={index}>{item}</ThemedText>))}
       </ThemedView>
     </ParallaxScrollView>
