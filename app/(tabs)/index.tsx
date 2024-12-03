@@ -39,7 +39,7 @@ export default function HomeScreen() {
   const [address, setAddress] = useState<Address | null>(null);
   const [details, setDetails] = useState<Details | null>(null);
 
-  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds 
+  const [timeLeft, setTimeLeft] = useState(150); // 2.5 minutes in seconds 
   const [timerRunning, setTimerRunning] = useState(false);
 
   useEffect(() => {
@@ -53,6 +53,7 @@ export default function HomeScreen() {
     }
     if (timeLeft === 0) {
       clearInterval(timer);
+      console.log('Timer expired');
       setTimerRunning(false);
     }
     return () => clearInterval(timer);
@@ -61,7 +62,7 @@ export default function HomeScreen() {
   const startTimer = () => {
     console.log('Start timer');
     setErrorMsg('Start timer');
-    setTimeLeft(300); // Reset to 5 minutes 
+    setTimeLeft(150); // Reset to 2.5 minutes 
     setTimerRunning(true);
   };
 
@@ -79,6 +80,14 @@ export default function HomeScreen() {
         return;
       }
       Location.watchPositionAsync({ accuracy: Location.Accuracy.High, timeInterval: 1000, distanceInterval: 1, }, async (loc) => {
+        console.log('Location');
+        setErrorMsg('Location');
+        if (timerRunning) {
+          console.log('Timer running');
+          setErrorMsg('Timer running: ' + timeLeft);
+          return;
+        }
+
         if (location?.coords.longitude == loc.coords.longitude && location?.coords.latitude == loc.coords.latitude) {
           console.log('No change in location');
           setErrorMsg('No change in location');
@@ -91,12 +100,6 @@ export default function HomeScreen() {
         }
         console.log(location?.coords.longitude.toFixed(9), location?.coords.latitude.toFixed(9));
         console.log(speed?.toFixed(2));
-
-        if (timerRunning) {
-          console.log('Timer running');
-          setErrorMsg('Timer running: ' + timeLeft);
-          return;
-        }
 
         // Tests only
         // https://nominatim.openstreetmap.org/reverse.php?lat=49.881243&lon=19.4889423&format=json&zoom=17
@@ -117,6 +120,7 @@ export default function HomeScreen() {
           console.log(addressResponse.status);
 
           if (addressResponse.status != 200) {
+            stopTimer();
             startTimer();
             return;
           }
