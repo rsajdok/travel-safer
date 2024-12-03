@@ -1,0 +1,6 @@
+
+// Tests only
+// https://nominatim.openstreetmap.org/reverse.php?lat=49.881243&lon=19.4889423&format=json&zoom=17
+// https://nominatim.openstreetmap.org/details.php?osmtype=W&osmid=207877134&addressdetails=0&hierarchy=0&group_hierarchy=1&format=json
+// https://www.openstreetmap.org/way/207877134
+

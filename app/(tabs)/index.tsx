@@ -106,11 +106,6 @@ export default function HomeScreen() {
         console.log('speed ', speed?.toFixed(2));
         addItem('speed ' + speed?.toFixed(2) + ' km/h');
 
-        // Tests only
-        // https://nominatim.openstreetmap.org/reverse.php?lat=49.881243&lon=19.4889423&format=json&zoom=17
-        // https://nominatim.openstreetmap.org/details.php?osmtype=W&osmid=207877134&addressdetails=0&hierarchy=0&group_hierarchy=1&format=json
-        // https://www.openstreetmap.org/way/207877134
-
         try {
           // Address
           const addressPath = `https://nominatim.openstreetmap.org/reverse.php?lat=${loc?.coords.latitude}&lon=${loc?.coords.longitude}&format=json&zoom=17`;
@@ -124,7 +119,7 @@ export default function HomeScreen() {
             }
           );
           console.log(addressResponse.status);
-          addItem(String(addressResponse.status));
+          addItem('s ' + String(addressResponse.status));
 
           if (addressResponse.status != 200) {
             stopTimer();
@@ -143,6 +138,7 @@ export default function HomeScreen() {
           setAddress(addressData);
           console.log('o ', address?.osm_id);
           console.log('n ', address?.name);
+          addItem('a ' + addressData.name + ' ' + addressData.osm_type + ' ' + addressData.type);
           console.log('o ', address?.osm_type);
           console.log('t ', address?.type);
 
@@ -160,7 +156,7 @@ export default function HomeScreen() {
           );
 
           console.log(detailsResponse.status);
-          addItem(String(detailsResponse.status));
+          addItem('s ' + String(detailsResponse.status));
           const detailsData = await detailsResponse.json();
           console.log('d ', JSON.stringify(detailsData));
           setDetails(details);
@@ -168,7 +164,7 @@ export default function HomeScreen() {
           console.log('o ', details?.osm_id);
           console.log('l ', details?.localname);
           console.log('e ', JSON.stringify(details?.extratags));
-          addItem(details?.localname + ' ' + JSON.stringify(details?.extratags));
+          addItem('d ' + details?.localname + ' ' + JSON.stringify(details?.extratags));
         } catch (error) {
           console.error(error);
           addItem(String(error));
