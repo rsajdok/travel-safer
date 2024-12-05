@@ -105,7 +105,7 @@ export const PlaceProvider: FC<PlaceProviderProps> = ({ children }) => {
 
                     monitorContext?.addMessage('Details ' + detailsResponse.status);
                     const detailsData = await detailsResponse.json();
-                    monitorContext?.addMessage('Details ' + JSON.stringify(detailsData));
+                    // monitorContext?.addMessage('Details ' + JSON.stringify(detailsData));
                     setDetails(detailsData);
                     monitorContext?.addMessage('Details ' + JSON.stringify(detailsData?.extratags));
                 } catch (error) {

@@ -1,49 +1,87 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import { Image, StyleSheet, Platform, View, Text, FlatList } from 'react-native';
 
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import React, { useContext } from 'react';
 import { PlaceContext } from '@/providers/PlaceProvider';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { MonitorContext } from '@/providers/MonitorProvider';
 
 
 export default function HomeScreen() {
   const placeContext = useContext(PlaceContext);
 
+  const monitorContext = useContext(MonitorContext);
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+    <SafeAreaView style={styles.safeArea}>
+
+      <View style={styles.topSection}>
+        <Text style={styles.speedText}>Current speed: {((placeContext?.location?.coords.speed ?? 0) * 3.6).toFixed(1)}</Text>
+        <Text style={styles.roadText}>Road name: {placeContext?.details?.localname}</Text>
+        <Text style={styles.roadText}>Max speed: {placeContext?.details?.extratags?.maxspeed ?? 'N/A'}</Text>
+
+      </View>
+      <View style={styles.bottomSection}>
+        <FlatList
+          data={monitorContext?.messages}
+          renderItem={({ item }) => <Text style={styles.messageText}>{item}</Text>}
+          keyExtractor={(item, index) => index.toString()}
         />
-      }>
-      <ThemedView>
-        <ThemedText>{((placeContext?.location?.coords.speed ?? 0) * 3.6).toFixed(2)} </ThemedText>
-        <ThemedText>{placeContext?.details?.localname} {JSON.stringify(placeContext?.details?.extratags.maxspeed)}</ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      </View>
+    </SafeAreaView >
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#e9ecef', // Slightly darker color
+    padding: 32,
+  },
+  topSection: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
+    backgroundColor: '#e9ecef', // Slightly darker color
+    padding: 20,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  speedText: {
+    fontSize: 24,
+    fontWeight: 'bold',
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  roadText: {
+    fontSize: 20,
+    marginVertical: 10,
+  },
+  warningText: {
+    fontSize: 18,
+    color: 'red',
+    fontWeight: 'bold',
+    marginTop: 10,
+  },
+  bottomSection: {
+    flex: 1,
+    marginTop: 20,
+  },
+  messageText: {
+    fontSize: 16,
+    padding: 10,
+    backgroundColor: '#e9ecef', // Slightly darker color
+    marginVertical: 5,
+    borderRadius: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 1,
   },
 });
-
 
