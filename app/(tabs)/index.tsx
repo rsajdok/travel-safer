@@ -7,16 +7,40 @@ import React, { useContext } from 'react';
 import { PlaceContext } from '@/providers/PlaceProvider';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MonitorContext } from '@/providers/MonitorProvider';
+import { Collapsible } from '@/components/Collapsible';
 
+
+import { useEffect } from 'react';
+import { Audio } from 'expo-av';
 
 export default function HomeScreen() {
   const placeContext = useContext(PlaceContext);
-
   const monitorContext = useContext(MonitorContext);
+
+  useEffect(() => {
+    let sound: Audio.Sound;
+
+    const playSound = async () => {
+      const { sound: newSound } = await Audio.Sound.createAsync(
+        require('@/assets/alert.mp3')
+      );
+      sound = newSound;
+      await sound.playAsync();
+    };
+
+    if (placeContext && placeContext?.currentSpeed() > placeContext?.maxSpeed()) {
+      playSound();
+    }
+
+    return () => {
+      if (sound) {
+        sound.unloadAsync();
+      }
+    };
+  }, [placeContext?.currentSpeed()]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
-
       <View style={styles.topSection}>
         <Text style={styles.speedText}>Current speed: {placeContext?.currentSpeed()}</Text>
         <Text style={styles.roadText}>Road name: {placeContext?.details?.localname}</Text>
@@ -30,10 +54,9 @@ export default function HomeScreen() {
           keyExtractor={(item, index) => index.toString()}
         />
       </View>
-    </SafeAreaView >
+    </SafeAreaView>
   );
 }
-
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
