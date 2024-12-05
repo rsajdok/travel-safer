@@ -9,6 +9,8 @@ import { MonitorContext } from './MonitorProvider';
 type PlaceContextType = {
     location: Location.LocationObject | null;
     details: Details | null;
+    currentSpeed: () => number;
+    maxSpeed: () => number;
 }
 
 export const PlaceContext = createContext<PlaceContextType | undefined>(undefined);
@@ -124,9 +126,17 @@ export const PlaceProvider: FC<PlaceProviderProps> = ({ children }) => {
         };
     }, []);
 
+    const currentSpeed = () => {
+        const speed = location?.coords.speed ?? 0;
+        return Number((speed * 3.6).toFixed(0));
+    };
+
+    const maxSpeed = () => {
+        return Number(details?.extratags?.maxspeed ?? 5);
+    }
 
     return (
-        <PlaceContext.Provider value={{ location, details }}>
+        <PlaceContext.Provider value={{ location, details, currentSpeed, maxSpeed }}>
             {children}
         </PlaceContext.Provider>
     );

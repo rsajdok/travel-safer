@@ -18,10 +18,10 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.safeArea}>
 
       <View style={styles.topSection}>
-        <Text style={styles.speedText}>Current speed: {((placeContext?.location?.coords.speed ?? 0) * 3.6).toFixed(1)}</Text>
+        <Text style={styles.speedText}>Current speed: {placeContext?.currentSpeed()}</Text>
         <Text style={styles.roadText}>Road name: {placeContext?.details?.localname}</Text>
-        <Text style={styles.roadText}>Max speed: {placeContext?.details?.extratags?.maxspeed ?? 'N/A'}</Text>
-
+        <Text style={styles.roadText}>Max speed: {placeContext?.details?.extratags?.maxspeed ?? '0'}</Text>
+        <Text style={styles.warningText}>{placeContext && placeContext?.currentSpeed() > placeContext?.maxSpeed() ? 'Slow down' : ''}</Text>
       </View>
       <View style={styles.bottomSection}>
         <FlatList
@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#e9ecef', // Slightly darker color
+    backgroundColor: '#e9ecef',
     padding: 20,
     borderRadius: 10,
     shadowColor: '#000',
@@ -68,13 +68,13 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   bottomSection: {
-    flex: 1,
+    flex: 2,
     marginTop: 20,
   },
   messageText: {
     fontSize: 16,
     padding: 10,
-    backgroundColor: '#e9ecef', // Slightly darker color
+    backgroundColor: '#e9ecef',
     marginVertical: 5,
     borderRadius: 5,
     shadowColor: '#000',
