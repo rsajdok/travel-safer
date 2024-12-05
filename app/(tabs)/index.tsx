@@ -1,52 +1,54 @@
-import { Image, StyleSheet, Platform, View, Text, FlatList } from 'react-native';
+import { Image, StyleSheet, Platform, View, Text, FlatList, Button, Switch } from 'react-native';
 
-import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
 import React, { useContext } from 'react';
 import { PlaceContext } from '@/providers/PlaceProvider';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MonitorContext } from '@/providers/MonitorProvider';
-import { Collapsible } from '@/components/Collapsible';
-
-
+import * as Notifications from 'expo-notifications';
 import { useEffect } from 'react';
-import { Audio } from 'expo-av';
+
+
+import { HelloWave } from '@/components/HelloWave';
+
+const description = 'This is a simple app that shows your current speed and the road you are on. It also warns you if you are driving too fast.';
 
 export default function HomeScreen() {
   const placeContext = useContext(PlaceContext);
   const monitorContext = useContext(MonitorContext);
 
   useEffect(() => {
-    let sound: Audio.Sound;
-
-    const playSound = async () => {
-      const { sound: newSound } = await Audio.Sound.createAsync(
-        require('@/assets/alert.mp3')
-      );
-      sound = newSound;
-      await sound.playAsync();
-    };
-
     if (placeContext && placeContext?.currentSpeed() > placeContext?.maxSpeed()) {
-      playSound();
+      Notifications.scheduleNotificationAsync({
+        content: {
+          title: 'Speed Alert',
+          body: 'You are driving too fast! Slow down.',
+        },
+        trigger: null,
+      });
     }
-
-    return () => {
-      if (sound) {
-        sound.unloadAsync();
-      }
-    };
   }, [placeContext?.currentSpeed()]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.topSection}>
-        <Text style={styles.speedText}>Current speed: {placeContext?.currentSpeed()}</Text>
-        <Text style={styles.roadText}>Road name: {placeContext?.details?.localname}</Text>
-        <Text style={styles.roadText}>Max speed: {placeContext?.details?.extratags?.maxspeed ?? '0'}</Text>
+        <View style={styles.row}>
+          <ThemedText type="subtitle">You drive{' '}</ThemedText>
+          <ThemedText type="title">{placeContext?.currentSpeed()}{' '}</ThemedText>
+          <ThemedText type='subtitle'>km\h</ThemedText>
+        </View>
+        <View style={styles.row}>
+          <ThemedText type="subtitle">on{' '}</ThemedText>
+          <ThemedText type="title">{placeContext?.details?.localname}</ThemedText>
+        </View>
+        <View style={styles.row}>
+          <ThemedText type="subtitle"> maximum speed is </ThemedText>
+          <ThemedText type="title">{placeContext?.maxSpeed()}</ThemedText>
+        </View>
+
         <Text style={styles.warningText}>{placeContext && placeContext?.currentSpeed() > placeContext?.maxSpeed() ? 'Slow down' : ''}</Text>
-      </View>
+        {placeContext && placeContext?.currentSpeed() > placeContext?.maxSpeed() ? <HelloWave /> : ''}
+      </View >
       <View style={styles.bottomSection}>
         <FlatList
           data={monitorContext?.messages}
@@ -54,7 +56,7 @@ export default function HomeScreen() {
           keyExtractor={(item, index) => index.toString()}
         />
       </View>
-    </SafeAreaView>
+    </SafeAreaView >
   );
 }
 const styles = StyleSheet.create({
@@ -62,6 +64,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#e9ecef', // Slightly darker color
     padding: 32,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingBottom: 8,
   },
   topSection: {
     flex: 1,
@@ -75,6 +82,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+    minHeight: '40%',
+    maxHeight: '40%',
   },
   speedText: {
     fontSize: 24,
@@ -85,7 +94,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   warningText: {
-    fontSize: 18,
+    fontSize: 20,
     color: 'red',
     fontWeight: 'bold',
     marginTop: 10,
@@ -106,5 +115,8 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 1,
   },
+  descriptionText: {
+    fontSize: 22,
+  }
 });
 
