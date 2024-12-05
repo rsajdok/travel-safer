@@ -6,7 +6,12 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 
+import * as Location from 'expo-location';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import React from 'react';
+import { TimerProvider } from '@/providers/TimerContext';
+import { PlaceProvider } from '@/providers/PlaceProvider';
+import { MonitorProvider } from '@/providers/MonitorProvider';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -18,9 +23,13 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
+    (async () => {
+
+      if (loaded) {
+        SplashScreen.hideAsync();
+      }
     }
+    )();
   }, [loaded]);
 
   if (!loaded) {
@@ -29,11 +38,17 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
+      <MonitorProvider>
+        <PlaceProvider>
+          <TimerProvider>
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="+not-found" />
+            </Stack>
+          </TimerProvider>
+        </PlaceProvider>
+      </MonitorProvider>
       <StatusBar style="auto" />
-    </ThemeProvider>
+    </ThemeProvider >
   );
 }
