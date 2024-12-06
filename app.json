@@ -10,14 +10,14 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.rsajdok.TravelSafer"
+      "bundleIdentifier": "dev.hackathon.TravelSafer"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.rsajdok.TravelSafer"
+      "package": "dev.hackathon.TravelSafer"
     },
     "web": {
       "bundler": "metro",
@@ -39,7 +39,15 @@
     "experiments": {
       "typedRoutes": true
     },
-    "sdkVersion": "52.0.0"
-  },
-  "name": "travelsafer"
+    "sdkVersion": "52.0.0",
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "7e8e87b2-bb0a-42f5-a519-de4e471d9fa6"
+      }
+    }
+  }
+  // "name": "travelsafer"
 }
