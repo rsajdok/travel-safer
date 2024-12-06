@@ -1,4 +1,4 @@
-package com.rsajdok.TravelSafer
+package dev.hackathon.TravelSafer
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

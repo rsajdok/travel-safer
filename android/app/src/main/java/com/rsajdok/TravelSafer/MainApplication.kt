@@ -1,4 +1,4 @@
-package com.rsajdok.TravelSafer
+package dev.hackathon.TravelSafer
 
 import android.app.Application
 import android.content.res.Configuration
