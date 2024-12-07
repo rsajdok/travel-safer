@@ -1,32 +1,22 @@
-import { StyleSheet, Image, Platform } from 'react-native';
+import { StyleSheet, View, FlatList, Text } from 'react-native';
 
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
 import React, { useContext, useEffect, useState } from 'react';
-import { TimerContext, TimerProvider } from '@/providers/TimerContext';
-import { PlaceContext } from '@/providers/PlaceProvider';
 import { MonitorContext } from '@/providers/MonitorProvider';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function TabTwoScreen() {
 
-  const timerContext = useContext(TimerContext);
-  const placeContext = useContext(PlaceContext);
-
   const monitorContext = useContext(MonitorContext);
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ThemedText style={styles.infoText}>
-        {timerContext?.timeLeft} {placeContext?.location?.coords.longitude} {placeContext?.details?.localname}
-      </ThemedText>
-      {monitorContext?.messages.map((item, index) => (
-        <ThemedText key={index} style={styles.messageText}>{item}</ThemedText>
-      ))}
+      <View >
+        <FlatList
+          data={monitorContext?.messages}
+          renderItem={({ item }) => <Text style={styles.messageText}>{item}</Text>}
+          keyExtractor={(item, index) => index.toString()}
+        />
+      </View>
     </SafeAreaView>
   );
 }
@@ -47,5 +37,14 @@ const styles = StyleSheet.create({
   },
   messageText: {
     fontSize: 16,
+    padding: 10,
+    backgroundColor: '#e9ecef',
+    marginVertical: 5,
+    borderRadius: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 1,
   }
 });

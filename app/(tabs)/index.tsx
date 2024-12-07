@@ -41,14 +41,28 @@ export default function HomeScreen() {
           <ThemedText type="subtitle">on{' '}</ThemedText>
           <ThemedText type="title">{placeContext?.details?.localname}</ThemedText>
         </View>
-        <View style={styles.row}>
-          <ThemedText type="subtitle"> maximum speed is </ThemedText>
-          <ThemedText type="title">{placeContext?.maxSpeed()}</ThemedText>
-        </View>
+        {
+          placeContext && placeContext?.hasMaxSpeed() &&
+          <View style={styles.row}>
+            <ThemedText type="subtitle">maximum speed is{' '}</ThemedText>
+            <ThemedText type="title">{placeContext?.maxSpeed()}</ThemedText>
+          </View>
+        }
 
-        <Text style={styles.warningText}>{placeContext && placeContext?.currentSpeed() > placeContext?.maxSpeed() ? 'Slow down' : ''}</Text>
-        {placeContext && placeContext?.currentSpeed() > placeContext?.maxSpeed() ? <HelloWave /> : ''}
+        <Text style={styles.warningText}>{placeContext && placeContext?.hasMaxSpeed() && placeContext?.currentSpeed() > placeContext?.maxSpeed() ? 'Slow down' : ''}</Text>
+        {placeContext && placeContext.hasMaxSpeed() && placeContext?.currentSpeed() > placeContext?.maxSpeed() ? <HelloWave /> : ''}
       </View >
+      <View style={styles.bottomSection}>
+        <Text style={styles.descriptionText}>
+          This proof-of-concept app improves road safety.
+        </Text>
+        <Text style={styles.descriptionText}>
+          More features to consider, sound notifications, background app.
+        </Text>
+        <Text style={styles.descriptionText}>
+          All done at Expo.</Text>
+      </View>
+      { /*
       <View style={styles.bottomSection}>
         <FlatList
           data={monitorContext?.messages}
@@ -56,6 +70,8 @@ export default function HomeScreen() {
           keyExtractor={(item, index) => index.toString()}
         />
       </View>
+        */
+      }
     </SafeAreaView >
   );
 }
@@ -63,7 +79,9 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#e9ecef', // Slightly darker color
-    padding: 32,
+    // padding: 32,
+    paddingTop: 64,
+    paddingHorizontal: 30,
   },
   row: {
     flexDirection: 'row',
@@ -101,7 +119,7 @@ const styles = StyleSheet.create({
   },
   bottomSection: {
     flex: 2,
-    marginTop: 20,
+    marginTop: 40,
   },
   messageText: {
     fontSize: 16,
@@ -116,7 +134,9 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   descriptionText: {
+    paddingVertical: 12,
     fontSize: 22,
+    justifyContent: 'center',
   }
 });
 

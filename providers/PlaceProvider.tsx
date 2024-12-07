@@ -11,6 +11,7 @@ type PlaceContextType = {
     details: Details | null;
     currentSpeed: () => number;
     maxSpeed: () => number;
+    hasMaxSpeed: () => boolean;
 }
 
 export const PlaceContext = createContext<PlaceContextType | undefined>(undefined);
@@ -38,7 +39,7 @@ export const PlaceProvider: FC<PlaceProviderProps> = ({ children }) => {
                 return;
             }
 
-            subscription = await Location.watchPositionAsync({ accuracy: Location.Accuracy.High, timeInterval: 15 * 1000, distanceInterval: 5, }, async (loc) => {
+            subscription = await Location.watchPositionAsync({ accuracy: Location.Accuracy.High, timeInterval: 1 * 1000, distanceInterval: 1, }, async (loc) => {
                 monitorContext?.addMessage('Location ' + location?.coords.longitude + ' ' + location?.coords.latitude);
                 if (loc === undefined || loc.coords === undefined || loc.coords.longitude === undefined || loc.coords.latitude === undefined) {
                     monitorContext?.addMessage('Location undefined');
@@ -135,8 +136,16 @@ export const PlaceProvider: FC<PlaceProviderProps> = ({ children }) => {
         return Number(details?.extratags?.maxspeed ?? 5);
     }
 
+    const hasMaxSpeed = () => {
+        if (details && details.extratags && details.extratags.maxspeed) {
+            return true;
+        } else {
+            return false;
+        }
+    };
+
     return (
-        <PlaceContext.Provider value={{ location, details, currentSpeed, maxSpeed }}>
+        <PlaceContext.Provider value={{ location, details, currentSpeed, maxSpeed, hasMaxSpeed }}>
             {children}
         </PlaceContext.Provider>
     );
