@@ -1,32 +1,86 @@
-import { Image, StyleSheet, Platform, View, Text, FlatList, Button, Switch } from 'react-native';
+import { StyleSheet, Platform, View, Text } from 'react-native';
 
 import { ThemedText } from '@/components/ThemedText';
 import React, { useContext } from 'react';
 import { PlaceContext } from '@/providers/PlaceProvider';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { MonitorContext } from '@/providers/MonitorProvider';
 import * as Notifications from 'expo-notifications';
 import { useEffect } from 'react';
 
 
 import { HelloWave } from '@/components/HelloWave';
+import { MonitorContext, MonitorProvider } from '@/providers/MonitorProvider';
 
 export default function HomeScreen() {
   const placeContext = useContext(PlaceContext);
 
+  const monitorContext = useContext(MonitorContext);
+
   /*
   useEffect(() => {
-    if (placeContext && placeContext?.currentSpeed() > placeContext?.maxSpeed()) {
+    registerForPushNotificationsAsync();
+
+  }, []);
+
+  const registerForPushNotificationsAsync = async () => {
+    if (Platform.OS === 'android') {
+      await Notifications.setNotificationChannelAsync('default',
+        {
+          name: 'default',
+          importance: Notifications.AndroidImportance.MAX,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: '#FF231F7C',
+        });
+    }
+
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+
+    if (finalStatus !== 'granted') {
+      alert('Failed to get push token for push notification!');
+      return;
+    }
+  }
+
+  const scheduleNotification = async () => {
+    monitorContext?.addMessage('schedule notification');
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        sound: true,
+        title: '',
+        body: '',
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+        seconds: 2,
+        repeats: false,
+      },
+    });
+  };
+  */
+
+
+  useEffect(() => {
+    if (placeContext && (placeContext?.speed * 3.6) > placeContext?.maxSpeed()) {
+      monitorContext?.addMessage('set notification');
+      // scheduleNotification();
+      /*
       Notifications.scheduleNotificationAsync({
         content: {
-          title: 'Speed Alert',
-          body: 'You are driving too fast! Slow down.',
+          sound: 'default',
         },
-        trigger: null,
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+          seconds: 1,
+        },
       });
+      */
     }
-  }, [placeContext?.currentSpeed()]);
-  */
+  }, [placeContext && (placeContext?.speed * 3.6) > placeContext?.maxSpeed()]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -36,10 +90,13 @@ export default function HomeScreen() {
           <ThemedText type="title">{((placeContext?.speed ?? 0) * 3.6).toFixed(0)}{' '}</ThemedText>
           <ThemedText type='subtitle'>km\h</ThemedText>
         </View>
-        <View style={styles.row}>
-          <ThemedText type="subtitle">on{' '}</ThemedText>
-          <ThemedText type="title">{placeContext?.details?.localname}</ThemedText>
-        </View>
+        {
+          placeContext && placeContext?.details &&
+          <View style={styles.row}>
+            <ThemedText type="subtitle">on{' '}</ThemedText>
+            <ThemedText type="title">{placeContext?.details?.localname}</ThemedText>
+          </View>
+        }
         {
           placeContext && placeContext?.hasMaxSpeed() &&
           <View style={styles.row}>
@@ -122,7 +179,7 @@ const styles = StyleSheet.create({
   },
   bottomSection: {
     flex: 2,
-    marginTop: 40,
+    marginTop: 35,
   },
   messageText: {
     fontSize: 16,
@@ -137,7 +194,7 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   descriptionText: {
-    paddingVertical: 8,
+    paddingVertical: 6,
     fontSize: 22,
     justifyContent: 'center',
   }

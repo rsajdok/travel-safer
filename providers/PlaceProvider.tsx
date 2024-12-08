@@ -23,7 +23,6 @@ export const PlaceProvider: FC<PlaceProviderProps> = ({ children }) => {
 
     const [speed, setSpeed] = useState<number>(0);
 
-    // const [address, setAddress] = useState<Address | null>(null);
     const [details, setDetails] = useState<Details | null>(null);
 
     const timerContext = useContext(TimerContext);
@@ -45,7 +44,7 @@ export const PlaceProvider: FC<PlaceProviderProps> = ({ children }) => {
             }
 
             subscription = await Location.watchPositionAsync({
-                accuracy: Location.Accuracy.High, timeInterval: 5 * 1000, distanceInterval: 1,
+                accuracy: Location.Accuracy.High, timeInterval: 1 * 1000, distanceInterval: 1,
             }, async (loc) => {
 
                 try {
@@ -54,6 +53,7 @@ export const PlaceProvider: FC<PlaceProviderProps> = ({ children }) => {
                         return;
                     }
                     setSpeed(loc.coords.speed ?? 0);
+                    monitorContext?.addMessage('Speed ' + ((loc?.coords?.speed ?? 0) * 3.6).toFixed(0));
 
                     monitorContext?.addMessage('Location new ' + loc.coords.longitude + ' ' + loc.coords.latitude);
 
@@ -99,7 +99,7 @@ export const PlaceProvider: FC<PlaceProviderProps> = ({ children }) => {
                     }
 
                     const addressData = await addressResponse.json();
-                    monitorContext?.addMessage('Address new ' + JSON.stringify(addressData));
+                    monitorContext?.addMessage('Address new ' + JSON.stringify(addressData.display_name));
                     if (address1 && addressData.osm_id == address1?.osm_id) {
                         monitorContext?.addMessage('No change in details ' + address1?.osm_id);
                         monitorContext?.addMessage('No change in details ' + details1?.extratags?.maxspeed);
@@ -130,6 +130,7 @@ export const PlaceProvider: FC<PlaceProviderProps> = ({ children }) => {
                     monitorContext?.addMessage('Details ' + JSON.stringify(detailsData?.extratags));
                     details1 = detailsData;
                     setDetails(detailsData);
+
                     monitorContext?.addMessage('Details stored ' + JSON.stringify(details1?.extratags?.maxspeed));
                 } catch (error) {
                     monitorContext?.addMessage('Error ' + error);
@@ -148,6 +149,7 @@ export const PlaceProvider: FC<PlaceProviderProps> = ({ children }) => {
     }, []);
 
     const maxSpeed = () => {
+        // return 2;
         if (details && details.extratags && details.extratags.maxspeed) {
             return Number(details.extratags.maxspeed);
         }
