@@ -4,7 +4,7 @@ import { ThemedText } from '@/components/ThemedText';
 import React, { useContext } from 'react';
 import { PlaceContext } from '@/providers/PlaceProvider';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import * as Notifications from 'expo-notifications';
+// import * as Notifications from 'expo-notifications';
 import { useEffect } from 'react';
 
 

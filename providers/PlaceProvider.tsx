@@ -44,7 +44,7 @@ export const PlaceProvider: FC<PlaceProviderProps> = ({ children }) => {
             }
 
             subscription = await Location.watchPositionAsync({
-                accuracy: Location.Accuracy.High, timeInterval: 1 * 1000, distanceInterval: 1,
+                accuracy: Location.Accuracy.High, timeInterval: 5 * 1000, distanceInterval: 2,
             }, async (loc) => {
 
                 try {
