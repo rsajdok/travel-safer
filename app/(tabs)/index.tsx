@@ -11,12 +11,10 @@ import { useEffect } from 'react';
 
 import { HelloWave } from '@/components/HelloWave';
 
-const description = 'This is a simple app that shows your current speed and the road you are on. It also warns you if you are driving too fast.';
-
 export default function HomeScreen() {
   const placeContext = useContext(PlaceContext);
-  const monitorContext = useContext(MonitorContext);
 
+  /*
   useEffect(() => {
     if (placeContext && placeContext?.currentSpeed() > placeContext?.maxSpeed()) {
       Notifications.scheduleNotificationAsync({
@@ -28,13 +26,14 @@ export default function HomeScreen() {
       });
     }
   }, [placeContext?.currentSpeed()]);
+  */
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.topSection}>
         <View style={styles.row}>
           <ThemedText type="subtitle">You drive{' '}</ThemedText>
-          <ThemedText type="title">{placeContext?.currentSpeed()}{' '}</ThemedText>
+          <ThemedText type="title">{((placeContext?.speed ?? 0) * 3.6).toFixed(0)}{' '}</ThemedText>
           <ThemedText type='subtitle'>km\h</ThemedText>
         </View>
         <View style={styles.row}>
@@ -49,18 +48,22 @@ export default function HomeScreen() {
           </View>
         }
 
-        <Text style={styles.warningText}>{placeContext && placeContext?.hasMaxSpeed() && placeContext?.currentSpeed() > placeContext?.maxSpeed() ? 'Slow down' : ''}</Text>
-        {placeContext && placeContext.hasMaxSpeed() && placeContext?.currentSpeed() > placeContext?.maxSpeed() ? <HelloWave /> : ''}
+        <Text style={styles.warningText}>{placeContext && placeContext?.hasMaxSpeed() && placeContext?.speed * 3.6 > placeContext?.maxSpeed() ? 'Slow down' : ''}</Text>
+        {placeContext && placeContext.hasMaxSpeed() && placeContext?.speed * 3.6 > placeContext?.maxSpeed() ? <HelloWave /> : ''}
       </View >
       <View style={styles.bottomSection}>
         <Text style={styles.descriptionText}>
-          This proof-of-concept app improves road safety.
+          The Proof-of-concept application.
+        </Text>
+        <Text style={styles.descriptionText}>
+          This simple app shows your current speed and the road you are on. It also warns you if you are driving too fast.
         </Text>
         <Text style={styles.descriptionText}>
           More features to consider, sound notifications, background app.
         </Text>
         <Text style={styles.descriptionText}>
-          All done at Expo.</Text>
+          Any comments or suggestions, please contact me.
+        </Text>
       </View>
       { /*
       <View style={styles.bottomSection}>
@@ -134,7 +137,7 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   descriptionText: {
-    paddingVertical: 12,
+    paddingVertical: 8,
     fontSize: 22,
     justifyContent: 'center',
   }

@@ -7,9 +7,8 @@ import { TimerContext } from './TimerContext';
 import { MonitorContext } from './MonitorProvider';
 
 type PlaceContextType = {
-    location: Location.LocationObject | null;
+    speed: number;
     details: Details | null;
-    currentSpeed: () => number;
     maxSpeed: () => number;
     hasMaxSpeed: () => boolean;
 }
@@ -22,13 +21,19 @@ type PlaceProviderProps = {
 
 export const PlaceProvider: FC<PlaceProviderProps> = ({ children }) => {
 
-    const [location, setLocation] = useState<Location.LocationObject | null>(null);
-    const [address, setAddress] = useState<Address | null>(null);
+    const [speed, setSpeed] = useState<number>(0);
+
+    // const [address, setAddress] = useState<Address | null>(null);
     const [details, setDetails] = useState<Details | null>(null);
 
     const timerContext = useContext(TimerContext);
 
     const monitorContext = useContext(MonitorContext);
+
+    let location1: Location.LocationObject | null = null;
+
+    let address1: Address | null = null as Address | null;
+    let details1: Details | null = null as Details | null;
 
     useEffect(() => {
         let subscription: Location.LocationSubscription | null = null;
@@ -39,36 +44,41 @@ export const PlaceProvider: FC<PlaceProviderProps> = ({ children }) => {
                 return;
             }
 
-            subscription = await Location.watchPositionAsync({ accuracy: Location.Accuracy.High, timeInterval: 1 * 1000, distanceInterval: 1, }, async (loc) => {
-                monitorContext?.addMessage('Location ' + location?.coords.longitude + ' ' + location?.coords.latitude);
-                if (loc === undefined || loc.coords === undefined || loc.coords.longitude === undefined || loc.coords.latitude === undefined) {
-                    monitorContext?.addMessage('Location undefined');
-                    return;
-                }
-                if (timerContext && timerContext.timerRunning) {
-                    return;
-                }
-
-                if (location?.coords.longitude == loc.coords.longitude && location?.coords.latitude == loc.coords.latitude) {
-                    monitorContext?.addMessage('No change in location');
-                    return;
-                }
-
-                if (coordinatesAlmostEqual(location, loc)) {
-                    monitorContext?.addMessage('No change in coordinates');
-                    return;
-                }
-
-                setLocation(loc);
-                if (loc.coords.speed) {
-                    // place.speed = loc.coords.speed.toFixed(2) ?? 0;
-                    // setSpeed(loc.coords.speed.toFixed(2)); // * 3.6); // Convert m/s to km/h 
-                }
+            subscription = await Location.watchPositionAsync({
+                accuracy: Location.Accuracy.High, timeInterval: 5 * 1000, distanceInterval: 1,
+            }, async (loc) => {
 
                 try {
+                    if (loc.coords.longitude === undefined || loc.coords.latitude === undefined) {
+                        monitorContext?.addMessage('Location start undefined');
+                        return;
+                    }
+                    setSpeed(loc.coords.speed ?? 0);
+
+                    monitorContext?.addMessage('Location new ' + loc.coords.longitude + ' ' + loc.coords.latitude);
+
+                    if (timerContext && timerContext.timerRunning) {
+                        monitorContext?.addMessage(timerContext.timeLeft.toString());
+                        return;
+                    }
+
+                    if (location1 === null) {
+                        monitorContext?.addMessage('No stored location');
+                    }
+
+                    if (location1 && coordinatesAlmostEqual(location1, loc)) {
+                        monitorContext?.addMessage('coordinatesAlmostEqual');
+                        return;
+                    }
+
+                    location1 = loc;
+
+                    monitorContext?.addMessage('Location stored ' + location1?.coords.longitude + ' ' + location1?.coords.latitude);
+
                     // Address
+                    monitorContext?.addMessage('Location address ' + loc.coords.longitude + ' ' + loc.coords.latitude);
                     const addressPath = `https://nominatim.openstreetmap.org/reverse.php?lat=${loc?.coords.latitude}&lon=${loc?.coords.longitude}&format=json&zoom=17`;
-                    monitorContext?.addMessage(addressPath.substring(0, 42));
+                    monitorContext?.addMessage(addressPath.substring(0, 96));
 
                     const addressResponse = await fetch(addressPath,
                         {
@@ -84,19 +94,28 @@ export const PlaceProvider: FC<PlaceProviderProps> = ({ children }) => {
                         return;
                     }
 
+                    if (address1) {
+                        monitorContext?.addMessage('Address stored a ' + address1?.osm_id);
+                    }
+
                     const addressData = await addressResponse.json();
-                    // place.address = addressData;
-                    if (addressData.osm_id == address?.osm_id) {
-                        monitorContext?.addMessage('No change in address');
+                    monitorContext?.addMessage('Address new ' + JSON.stringify(addressData));
+                    if (address1 && addressData.osm_id == address1?.osm_id) {
+                        monitorContext?.addMessage('No change in details ' + address1?.osm_id);
+                        monitorContext?.addMessage('No change in details ' + details1?.extratags?.maxspeed);
                         return;
                     }
 
-                    setAddress(addressData);
+                    address1 = addressData;
+                    monitorContext?.addMessage('Address stored b ' + address1?.osm_id);
 
                     // Details
                     // 207877134
                     const id = addressData.osm_id;
-                    monitorContext?.addMessage('Details ' + id);
+                    monitorContext?.addMessage('Reverse ' + id + ' ' + addressData.display_name);
+
+                    // monitorContext?.addMessage('Reverse stored ' + address1?.osm_id);
+
                     const detailsPath = `https://nominatim.openstreetmap.org/details.php?osmtype=W&osmid=${id}&addressdetails=0&hierarchy=0&group_hierarchy=1&format=json`;
                     monitorContext?.addMessage(detailsPath.substring(0, 42));
                     const detailsResponse = await fetch(detailsPath,
@@ -108,9 +127,10 @@ export const PlaceProvider: FC<PlaceProviderProps> = ({ children }) => {
 
                     monitorContext?.addMessage('Details ' + detailsResponse.status);
                     const detailsData = await detailsResponse.json();
-                    // monitorContext?.addMessage('Details ' + JSON.stringify(detailsData));
-                    setDetails(detailsData);
                     monitorContext?.addMessage('Details ' + JSON.stringify(detailsData?.extratags));
+                    details1 = detailsData;
+                    setDetails(detailsData);
+                    monitorContext?.addMessage('Details stored ' + JSON.stringify(details1?.extratags?.maxspeed));
                 } catch (error) {
                     monitorContext?.addMessage('Error ' + error);
                     // console.error(error);
@@ -127,13 +147,11 @@ export const PlaceProvider: FC<PlaceProviderProps> = ({ children }) => {
         };
     }, []);
 
-    const currentSpeed = () => {
-        const speed = location?.coords.speed ?? 0;
-        return Number((speed * 3.6).toFixed(0));
-    };
-
     const maxSpeed = () => {
-        return Number(details?.extratags?.maxspeed ?? 5);
+        if (details && details.extratags && details.extratags.maxspeed) {
+            return Number(details.extratags.maxspeed);
+        }
+        return 5;
     }
 
     const hasMaxSpeed = () => {
@@ -145,7 +163,7 @@ export const PlaceProvider: FC<PlaceProviderProps> = ({ children }) => {
     };
 
     return (
-        <PlaceContext.Provider value={{ location, details, currentSpeed, maxSpeed, hasMaxSpeed }}>
+        <PlaceContext.Provider value={{ speed, details, maxSpeed, hasMaxSpeed }}>
             {children}
         </PlaceContext.Provider>
     );
