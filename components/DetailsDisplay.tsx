@@ -8,8 +8,8 @@ const DetailsDisplay = () => {
 
     return (
         <View style={styles.row}>
-            <ThemedText type="subtitle">max{' '}</ThemedText>
-            <ThemedText type='subtitle'>{maxSpeed}</ThemedText>
+            <ThemedText type="subtitle">maximum speed is{' '}</ThemedText>
+            <ThemedText type='title'>{maxSpeed}</ThemedText>
         </View>
 
     );

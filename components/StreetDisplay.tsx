@@ -9,7 +9,7 @@ const StreetDisplay = () => {
     return (
         <View style={styles.row}>
             <ThemedText type="subtitle">on{' '}</ThemedText>
-            {street && <ThemedText type='subtitle'>{street}</ThemedText>}
+            {street && <ThemedText type='title'>{street}</ThemedText>}
         </View>
 
     );

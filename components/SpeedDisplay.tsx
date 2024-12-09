@@ -9,7 +9,7 @@ const SpeedDisplay = () => {
     return (
         <View style={styles.row}>
             <ThemedText type="subtitle">You drive{' '}</ThemedText>
-            <ThemedText type='subtitle'>{(speed).toFixed(0)} km\h</ThemedText>
+            <ThemedText type='title'>{(speed).toFixed(0)} km\h</ThemedText>
         </View>
     );
 }

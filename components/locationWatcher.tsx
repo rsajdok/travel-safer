@@ -31,7 +31,7 @@ const LocationWatcher: React.FC = () => {
             subscription = await Location.watchPositionAsync(
                 {
                     accuracy: Location.Accuracy.High,
-                    timeInterval: 10 * 1000,
+                    timeInterval: 8 * 1000,
                     distanceInterval: 2,
                 },
                 async (location) => {

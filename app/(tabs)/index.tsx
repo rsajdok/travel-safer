@@ -1,105 +1,14 @@
 import { StyleSheet, Platform, View, Text } from 'react-native';
-
-import { ThemedText } from '@/components/ThemedText';
 import React, { useContext } from 'react';
-import { PlaceContext } from '@/providers/PlaceProvider';
 import { SafeAreaView } from 'react-native-safe-area-context';
-// import * as Notifications from 'expo-notifications';
-import { useEffect } from 'react';
 
-
-import { HelloWave } from '@/components/HelloWave';
-import { MonitorContext, MonitorProvider } from '@/providers/MonitorProvider';
-import useStore from '@/store';
 import LocationWatcher from '@/components/locationWatcher';
-import useLocationStore from '@/store/locationStore';
 import SpeedDisplay from '@/components/SpeedDisplay';
 import StreetDisplay from '@/components/StreetDisplay';
 import DetailsDisplay from '@/components/DetailsDisplay';
+import { HelloWave } from '@/components/HelloWave';
 
 export default function HomeScreen() {
-  // const placeContext = useContext(PlaceContext);
-
-  // const monitorContext = useContext(MonitorContext);
-
-  /*
-  const { speed } = useLocationStore((state) => ({
-    speed: state.speed,
-  }));
-  */
-
-  /*
-  const { name } = useStore((state) => ({
-    name: state.name,
-  }));
-  */
-
-
-  /*
-  useEffect(() => {
-    registerForPushNotificationsAsync();
-
-  }, []);
-
-  const registerForPushNotificationsAsync = async () => {
-    if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync('default',
-        {
-          name: 'default',
-          importance: Notifications.AndroidImportance.MAX,
-          vibrationPattern: [0, 250, 250, 250],
-          lightColor: '#FF231F7C',
-        });
-    }
-
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
-    if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
-    }
-
-    if (finalStatus !== 'granted') {
-      alert('Failed to get push token for push notification!');
-      return;
-    }
-  }
-
-  const scheduleNotification = async () => {
-    monitorContext?.addMessage('schedule notification');
-    await Notifications.scheduleNotificationAsync({
-      content: {
-        sound: true,
-        title: '',
-        body: '',
-      },
-      trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
-        seconds: 2,
-        repeats: false,
-      },
-    });
-  };
-  */
-
-  /*
-  useEffect(() => {
-    if (placeContext && (placeContext?.speed * 3.6) > placeContext?.maxSpeed()) {
-      monitorContext?.addMessage('set notification');
-      // scheduleNotification();
-      Notifications.scheduleNotificationAsync({
-        content: {
-          sound: 'default',
-        },
-        trigger: {
-          type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
-          seconds: 1,
-        },
-      });
-}
-  }, [placeContext && (placeContext?.speed * 3.6) > placeContext?.maxSpeed()]);
-  */
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <LocationWatcher />
@@ -108,25 +17,7 @@ export default function HomeScreen() {
         <StreetDisplay />
         <DetailsDisplay />
         <HelloWave />
-        {
-          /*
-          placeContext && placeContext?.details &&
-          <View style={styles.row}>
-            <ThemedText type="subtitle">on{' '}</ThemedText>
-            <ThemedText type="title">{placeContext?.details?.localname}</ThemedText>
-          </View>
-        }
-        {
-          placeContext && placeContext?.hasMaxSpeed() &&
-          <View style={styles.row}>
-            <ThemedText type="subtitle">maximum speed is{' '}</ThemedText>
-            <ThemedText type="title">{placeContext?.maxSpeed()}</ThemedText>
-          </View>
-        }
-
-        <Text style={styles.warningText}>{placeContext && placeContext?.hasMaxSpeed() && placeContext?.speed * 3.6 > placeContext?.maxSpeed() ? 'Slow down' : ''}</Text>
-        {placeContext && placeContext.hasMaxSpeed() && placeContext?.speed * 3.6 > placeContext?.maxSpeed() ? <HelloWave /> : ''}
-      </View >
+      </View>
       <View style={styles.bottomSection}>
         <Text style={styles.descriptionText}>
           The Proof-of-concept application.
@@ -141,8 +32,7 @@ export default function HomeScreen() {
           Any comments or suggestions, please contact me.
         </Text>
       </View>
-      */ }
-        { /*
+      { /*
       <View style={styles.bottomSection}>
         <FlatList
           data={monitorContext?.messages}
@@ -151,16 +41,14 @@ export default function HomeScreen() {
         />
       </View>
         */
-        }
-      </View>
+      }
     </SafeAreaView >
   );
 }
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#e9ecef', // Slightly darker color
-    // padding: 32,
+    backgroundColor: '#e9ecef',
     paddingTop: 64,
     paddingHorizontal: 30,
   },
@@ -191,12 +79,6 @@ const styles = StyleSheet.create({
   roadText: {
     fontSize: 20,
     marginVertical: 10,
-  },
-  warningText: {
-    fontSize: 20,
-    color: 'red',
-    fontWeight: 'bold',
-    marginTop: 10,
   },
   bottomSection: {
     flex: 2,
