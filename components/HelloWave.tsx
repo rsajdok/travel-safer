@@ -9,9 +9,11 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { ThemedText } from '@/components/ThemedText';
+import useLocationStore from '@/store/locationStore';
 
 export function HelloWave() {
   const rotationAnimation = useSharedValue(0);
+  const warrning = useLocationStore((state) => state.warning);
 
   rotationAnimation.value = withRepeat(
     withSequence(withTiming(25, { duration: 150 }), withTiming(0, { duration: 150 })),
@@ -23,9 +25,11 @@ export function HelloWave() {
   }));
 
   return (
-    <Animated.View style={animatedStyle}>
-      <ThemedText style={styles.text}>👋</ThemedText>
-    </Animated.View>
+    warrning && (
+      <Animated.View style={animatedStyle}>
+        <ThemedText style={styles.text}>👋</ThemedText>
+      </Animated.View>
+    )
   );
 }
 

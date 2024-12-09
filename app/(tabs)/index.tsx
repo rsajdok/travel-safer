@@ -10,11 +10,30 @@ import { useEffect } from 'react';
 
 import { HelloWave } from '@/components/HelloWave';
 import { MonitorContext, MonitorProvider } from '@/providers/MonitorProvider';
+import useStore from '@/store';
+import LocationWatcher from '@/components/locationWatcher';
+import useLocationStore from '@/store/locationStore';
+import SpeedDisplay from '@/components/SpeedDisplay';
+import StreetDisplay from '@/components/StreetDisplay';
+import DetailsDisplay from '@/components/DetailsDisplay';
 
 export default function HomeScreen() {
-  const placeContext = useContext(PlaceContext);
+  // const placeContext = useContext(PlaceContext);
 
-  const monitorContext = useContext(MonitorContext);
+  // const monitorContext = useContext(MonitorContext);
+
+  /*
+  const { speed } = useLocationStore((state) => ({
+    speed: state.speed,
+  }));
+  */
+
+  /*
+  const { name } = useStore((state) => ({
+    name: state.name,
+  }));
+  */
+
 
   /*
   useEffect(() => {
@@ -63,12 +82,11 @@ export default function HomeScreen() {
   };
   */
 
-
+  /*
   useEffect(() => {
     if (placeContext && (placeContext?.speed * 3.6) > placeContext?.maxSpeed()) {
       monitorContext?.addMessage('set notification');
       // scheduleNotification();
-      /*
       Notifications.scheduleNotificationAsync({
         content: {
           sound: 'default',
@@ -78,19 +96,20 @@ export default function HomeScreen() {
           seconds: 1,
         },
       });
-      */
-    }
+}
   }, [placeContext && (placeContext?.speed * 3.6) > placeContext?.maxSpeed()]);
+  */
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <LocationWatcher />
       <View style={styles.topSection}>
-        <View style={styles.row}>
-          <ThemedText type="subtitle">You drive{' '}</ThemedText>
-          <ThemedText type="title">{((placeContext?.speed ?? 0) * 3.6).toFixed(0)}{' '}</ThemedText>
-          <ThemedText type='subtitle'>km\h</ThemedText>
-        </View>
+        <SpeedDisplay />
+        <StreetDisplay />
+        <DetailsDisplay />
+        <HelloWave />
         {
+          /*
           placeContext && placeContext?.details &&
           <View style={styles.row}>
             <ThemedText type="subtitle">on{' '}</ThemedText>
@@ -122,7 +141,8 @@ export default function HomeScreen() {
           Any comments or suggestions, please contact me.
         </Text>
       </View>
-      { /*
+      */ }
+        { /*
       <View style={styles.bottomSection}>
         <FlatList
           data={monitorContext?.messages}
@@ -131,7 +151,8 @@ export default function HomeScreen() {
         />
       </View>
         */
-      }
+        }
+      </View>
     </SafeAreaView >
   );
 }

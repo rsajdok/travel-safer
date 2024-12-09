@@ -10,7 +10,6 @@ import * as Location from 'expo-location';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import React from 'react';
 import { TimerProvider } from '@/providers/TimerContext';
-import { PlaceProvider } from '@/providers/PlaceProvider';
 import { MonitorProvider } from '@/providers/MonitorProvider';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -39,14 +38,12 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <MonitorProvider>
-        <PlaceProvider>
-          <TimerProvider>
-            <Stack>
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="+not-found" />
-            </Stack>
-          </TimerProvider>
-        </PlaceProvider>
+        <TimerProvider>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+        </TimerProvider>
       </MonitorProvider>
       <StatusBar style="auto" />
     </ThemeProvider >

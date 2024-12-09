@@ -5,6 +5,7 @@ import Details from '@/types/details';
 import coordinatesAlmostEqual from '@/gis/coordinatesAlmostEqual';
 import { TimerContext } from './TimerContext';
 import { MonitorContext } from './MonitorProvider';
+import useStore from '@/store';
 
 type PlaceContextType = {
     speed: number;
@@ -34,6 +35,12 @@ export const PlaceProvider: FC<PlaceProviderProps> = ({ children }) => {
     let address1: Address | null = null as Address | null;
     let details1: Details | null = null as Details | null;
 
+    /*
+    const { setName } = useStore((state) => ({
+        setName: state.setName,
+    }));
+    */
+
     useEffect(() => {
         let subscription: Location.LocationSubscription | null = null;
 
@@ -44,7 +51,9 @@ export const PlaceProvider: FC<PlaceProviderProps> = ({ children }) => {
             }
 
             subscription = await Location.watchPositionAsync({
-                accuracy: Location.Accuracy.High, timeInterval: 5 * 1000, distanceInterval: 2,
+                accuracy: Location.Accuracy.High,
+                timeInterval: 5 * 1000,
+                distanceInterval: 2,
             }, async (loc) => {
 
                 try {
