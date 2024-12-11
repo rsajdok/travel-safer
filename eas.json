@@ -16,6 +16,14 @@
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "android": {
+        // "autoIncrement": true,
+        "releaseStatus": "draft",
+        "changesNotSentForReview": true,
+        // (enum: production, beta, alpha, internal) 
+        "track": "internal"
+      }
+    }
   }
 }
