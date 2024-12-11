@@ -16,3 +16,4 @@ No information is stored on our servers.
 
 Security
 As we do not collect any personal data, there are no security concerns related to the storage or transmission of personal information. We are committed to ensuring that our users can use our App without any privacy concerns.
+
